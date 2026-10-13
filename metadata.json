@@ -1,0 +1,6 @@
+{
+  "name": "AI Gigafactories Video Decision",
+  "description": "Čus, uděláme to video o AI Gigafactories? An interactive Czech video decision prank app.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
