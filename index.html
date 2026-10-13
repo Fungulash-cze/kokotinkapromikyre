@@ -6,12 +6,12 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-    <title>Čus, uděláme to video o AI Gigafactories</title>
+    <title>Čus, uděláme to video o AI Gigafactories?</title>
     <meta
       name="description"
       content="Interaktivní rozhodovací aplikace ve stylu Close Friends."
     />
-    <meta property="og:title" content="Čus, uděláme to video o AI Gigafactories" />
+    <meta property="og:title" content="Čus, uděláme to video o AI Gigafactories?" />
     <meta
       property="og:description"
       content="Interaktivní rozhodovací aplikace ve stylu Close Friends."
@@ -287,50 +287,21 @@
         opacity: 0 !important;
       }
 
-      /* Third Button: Mint pill with ink border */
-      .btn-alternative {
-        display: none;
-        width: 100%;
-        max-width: 540px;
-        min-height: 54px;
-        padding: 0.95rem 1.85rem;
-        font-size: clamp(0.95rem, 2.8vw, 1.05rem);
-        font-weight: 700;
-        line-height: 1.4;
-        text-align: center;
-        border-radius: 9999px;
-        color: var(--cf-ink);
-        background: #e8f6ed;
-        border: 2px solid var(--cf-mint-dark);
+      /* Morphed state: when NE turns into Yessir */
+      .btn-ne.morphed-yessir {
+        background-color: var(--cf-ink) !important;
+        color: var(--cf-cream) !important;
+        border-color: transparent !important;
         box-shadow: 
-          0 8px 24px rgba(88, 168, 123, 0.25),
-          0 2px 6px rgba(17, 22, 19, 0.08);
-        animation: alternativeSlideIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          0 6px 20px rgba(17, 22, 19, 0.35),
+          0 0 16px rgba(108, 191, 143, 0.45) !important;
+        animation: morphPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
 
-      .btn-alternative:hover {
-        background: var(--cf-mint-bg);
-        color: #ffffff;
-        border-color: var(--cf-mint-dark);
-        transform: scale(1.03) translateY(-2px);
-        box-shadow: 
-          0 12px 32px rgba(88, 168, 123, 0.4),
-          0 4px 10px rgba(17, 22, 19, 0.15);
-      }
-
-      .btn-alternative:active {
-        transform: scale(0.98) translateY(0);
-      }
-
-      @keyframes alternativeSlideIn {
-        from {
-          opacity: 0;
-          transform: translateY(28px) scale(0.94);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-        }
+      @keyframes morphPop {
+        0% { transform: scale(0.85); }
+        50% { transform: scale(1.15); }
+        100% { transform: scale(1); }
       }
 
       /* Replay / Restart Control */
@@ -466,7 +437,7 @@
     <main class="app-wrapper">
       <div class="app-card" id="app-card">
         <!-- Main Heading -->
-        <h1 id="main-heading">Čus, uděláme to video o AI Gigafactories</h1>
+        <h1 id="main-heading">Čus, uděláme to video o AI Gigafactories?</h1>
 
         <!-- Context Sub-heading (clean/empty) -->
         <p id="sub-heading"></p>
@@ -491,15 +462,6 @@
               NE
             </button>
           </div>
-
-          <!-- The Twist: Third button revealed after 3 escapes -->
-          <button
-            id="btn-alternative"
-            class="btn btn-alternative"
-            type="button"
-          >
-            Tak uděláme něco jinýho, to výběrko byl celkem voser
-          </button>
         </div>
 
         <!-- Restart control -->
@@ -525,7 +487,6 @@
         const subHeading = document.getElementById('sub-heading');
         const btnAno = document.getElementById('btn-ano');
         const btnNe = document.getElementById('btn-ne');
-        const btnAlt = document.getElementById('btn-alternative');
         const resetControl = document.getElementById('reset-control');
         const btnReset = document.getElementById('btn-reset');
         const canvas = document.getElementById('celebration-canvas');
@@ -537,6 +498,9 @@
         // State
         let jumpCount = 0;
         let isEscaped = false;
+        let isReturned = false;
+        let isTransformed = false;
+        let placeholder = null;
         let soundEnabled = true;
 
         // Sound generator via Web Audio API
@@ -609,24 +573,20 @@
                 osc.start(noteTime);
                 osc.stop(noteTime + 0.45);
               });
-            } else if (type === 'alternative') {
-              const freqs = [329.63, 415.3, 493.88, 659.25];
-              freqs.forEach((freq, i) => {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                const noteTime = now + i * 0.05;
+            } else if (type === 'morph') {
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(440, now);
+              osc.frequency.exponentialRampToValueAtTime(880, now + 0.18);
 
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(freq, noteTime);
+              gain.gain.setValueAtTime(0.25, now);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
 
-                gain.gain.setValueAtTime(0.18, noteTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.6);
-
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(noteTime);
-                osc.stop(noteTime + 0.65);
-              });
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.start(now);
+              osc.stop(now + 0.22);
             }
           } catch (e) {
             // Audio policy fallback
@@ -727,8 +687,50 @@
           }
         }
 
+        // Morph NE into Yessir!
+        function morphToYessir() {
+          if (isTransformed) return;
+          isTransformed = true;
+          btnNe.textContent = 'Yessir';
+          btnNe.setAttribute('aria-label', 'Yessir');
+          btnNe.classList.add('morphed-yessir');
+          playSound('morph');
+        }
+
+        // Shared victory trigger
+        function triggerVictory(source) {
+          heading.style.opacity = '0';
+          subHeading.style.opacity = '0';
+          heading.style.transform = 'scale(0.95)';
+
+          setTimeout(() => {
+            heading.textContent = 'letsgooo kamo tak já jsem nejotravnější člověk na světě';
+            heading.style.opacity = '1';
+            heading.style.transform = 'scale(1)';
+
+            if (source === 'yesssir') {
+              subHeading.textContent = 'ale pls zkus ještě kliknout na "ne", sral jsem se s tim designem;)))';
+              subHeading.style.opacity = '1';
+            } else {
+              subHeading.textContent = '';
+              subHeading.style.opacity = '0';
+            }
+
+            createConfettiBurst();
+            playSound('victory');
+
+            resetControl.classList.add('visible');
+          }, 200);
+        }
+
         // NE Button Escape Logic
         function escapeNeButton(e) {
+          // If already returned or morphed, do not escape - morph to Yessir!
+          if (isReturned || isTransformed) {
+            morphToYessir();
+            return;
+          }
+
           if (jumpCount >= 3) return;
 
           if (e && e.cancelable) {
@@ -771,6 +773,16 @@
 
           if (!isEscaped) {
             isEscaped = true;
+
+            // Ghost placeholder so Yesssir does not shift layout
+            placeholder = document.createElement('div');
+            placeholder.style.width = `${btnWidth}px`;
+            placeholder.style.height = `${btnHeight}px`;
+            placeholder.style.display = 'inline-flex';
+            placeholder.style.visibility = 'hidden';
+            placeholder.style.pointerEvents = 'none';
+            btnNe.parentNode.insertBefore(placeholder, btnNe.nextSibling);
+
             btnNe.classList.add('is-escaping');
             btnNe.style.width = `${btnWidth}px`;
             btnNe.style.height = `${btnHeight}px`;
@@ -785,88 +797,84 @@
 
           playSound('escape');
 
-          // The Twist: Exactly 3 jumps
+          // The Twist: After 3 jumps, wait a moment and smoothly return home!
           if (jumpCount === 3) {
             setTimeout(() => {
-              playSound('fall');
-              btnNe.classList.add('falling');
+              if (placeholder) {
+                const homeRect = placeholder.getBoundingClientRect();
+                btnNe.style.transition = 'left 0.6s cubic-bezier(0.34, 1.25, 0.64, 1), top 0.6s cubic-bezier(0.34, 1.25, 0.64, 1), transform 0.3s ease';
+                btnNe.style.left = `${homeRect.left}px`;
+                btnNe.style.top = `${homeRect.top}px`;
 
-              setTimeout(() => {
-                btnAlt.style.display = 'inline-flex';
-              }, 400);
-            }, 350);
+                setTimeout(() => {
+                  isReturned = true;
+                  btnNe.classList.remove('is-escaping');
+                  btnNe.style.position = '';
+                  btnNe.style.left = '';
+                  btnNe.style.top = '';
+                  btnNe.style.width = '';
+                  btnNe.style.height = '';
+                  btnNe.style.transition = '';
+                  if (placeholder && placeholder.parentNode) {
+                    placeholder.parentNode.removeChild(placeholder);
+                    placeholder = null;
+                  }
+                }, 620);
+              }
+            }, 500);
           }
         }
 
-        // Multi-event binding for escape on mobile & desktop
+        // Multi-event binding for escape / morph on mobile & desktop
         const trapEvents = ['mouseenter', 'touchstart', 'pointerdown'];
         trapEvents.forEach((evtName) => {
           btnNe.addEventListener(
             evtName,
             function (e) {
-              escapeNeButton(e);
+              if (isReturned || isTransformed) {
+                morphToYessir();
+              } else {
+                escapeNeButton(e);
+              }
             },
             { passive: false }
           );
         });
 
+        btnNe.addEventListener('focus', function () {
+          if (isReturned || isTransformed) {
+            morphToYessir();
+          }
+        });
+
+        // When clicked, NE is always intercepted
         btnNe.addEventListener('click', function (e) {
           e.preventDefault();
           e.stopPropagation();
-          escapeNeButton(e);
+          morphToYessir();
+          triggerVictory('morphed');
         });
 
         // "Yesssir" Button Click Interaction
         btnAno.addEventListener('click', function () {
-          heading.style.opacity = '0';
-          subHeading.style.opacity = '0';
-          heading.style.transform = 'scale(0.95)';
-
-          setTimeout(() => {
-            heading.textContent = 'letsgooo kamo tak já jsem nejotravnější debil na světě';
-            heading.style.opacity = '1';
-            heading.style.transform = 'scale(1)';
-
-            subHeading.textContent = 'ale pls zkus ještě kliknout na "ne", sral jsem se s tim designem;)))';
-            subHeading.style.opacity = '1';
-
-            createConfettiBurst();
-            playSound('victory');
-
-            resetControl.classList.add('visible');
-          }, 200);
-        });
-
-        // Third Button Click Interaction
-        btnAlt.addEventListener('click', function () {
-          btnAno.style.display = 'none';
-          btnAlt.style.pointerEvents = 'none';
-
-          heading.style.opacity = '0';
-          heading.style.transform = 'scale(0.95)';
-
-          setTimeout(() => {
-            heading.textContent = 'letsgooo tak já jsem nejotravnější debil na světě';
-            heading.style.opacity = '1';
-            heading.style.transform = 'scale(1)';
-
-            subHeading.textContent = '';
-
-            createConfettiBurst();
-            playSound('alternative');
-
-            resetControl.classList.add('visible');
-          }, 200);
+          triggerVictory('yesssir');
         });
 
         // Reset / Replay Logic
         btnReset.addEventListener('click', function () {
           jumpCount = 0;
           isEscaped = false;
+          isReturned = false;
+          isTransformed = false;
+
+          if (placeholder && placeholder.parentNode) {
+            placeholder.parentNode.removeChild(placeholder);
+            placeholder = null;
+          }
 
           heading.style.opacity = '0';
           setTimeout(() => {
-            heading.textContent = 'Čus, uděláme to video o AI Gigafactories';
+            heading.textContent = 'Čus, uděláme to video o AI Gigafactories?';
             heading.style.opacity = '1';
             subHeading.textContent = '';
           }, 150);
@@ -876,7 +884,9 @@
           btnAno.style.display = 'inline-flex';
           btnAno.style.pointerEvents = 'auto';
 
-          btnNe.classList.remove('is-escaping', 'falling');
+          btnNe.classList.remove('is-escaping', 'falling', 'morphed-yessir');
+          btnNe.textContent = 'NE';
+          btnNe.setAttribute('aria-label', 'NE');
           btnNe.style.display = 'inline-flex';
           btnNe.style.position = '';
           btnNe.style.left = '';
@@ -886,9 +896,6 @@
           btnNe.style.transform = '';
           btnNe.style.opacity = '';
           btnNe.style.pointerEvents = 'auto';
-
-          btnAlt.style.display = 'none';
-          btnAlt.style.pointerEvents = 'auto';
         });
       })();
     </script>
