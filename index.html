@@ -7,10 +7,13 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <title>Prosík prosík pane šéf</title>
+    <meta name="description" content="Prosík prosík pane šéf" />
     <meta property="og:title" content="Prosík prosík pane šéf" />
+    <meta property="og:description" content="Prosík prosík pane šéf" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Prosík prosík pane šéf" />
+    <meta name="twitter:description" content="Prosík prosík pane šéf" />
 
     <!-- Google Fonts: Plus Jakarta Sans & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -242,11 +245,13 @@
 
       /* NE Button - Clean light pill */
       .btn-ne {
+        --btn-scale: 1;
         background: #f3f2eb;
         color: var(--cf-ink);
         border: 1.5px solid rgba(17, 22, 19, 0.16);
         box-shadow: 0 4px 12px rgba(17, 22, 19, 0.05);
         z-index: 100;
+        transform: scale(var(--btn-scale));
         transition: transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1),
                     background-color 0.2s ease,
                     box-shadow 0.2s ease;
@@ -271,13 +276,75 @@
                     transform 0.25s ease-out;
       }
 
-      /* Dramatic drop off the screen */
-      .btn-ne.falling {
-        pointer-events: none !important;
-        transition: transform 0.85s cubic-bezier(0.55, 0, 1, 0.45),
-                    opacity 0.85s ease-in !important;
-        transform: translateY(120vh) rotate(48deg) scale(0.5) !important;
-        opacity: 0 !important;
+      /* Panic Jitter animations */
+      @keyframes jitterLight {
+        0%, 100% { transform: scale(var(--btn-scale, 0.8)) translate(0, 0); }
+        25% { transform: scale(var(--btn-scale, 0.8)) translate(-1.5px, 1px) rotate(-1deg); }
+        50% { transform: scale(var(--btn-scale, 0.8)) translate(1.5px, -1px) rotate(1deg); }
+        75% { transform: scale(var(--btn-scale, 0.8)) translate(-1px, -1px); }
+      }
+
+      @keyframes jitterHeavy {
+        0%, 100% { transform: scale(var(--btn-scale, 0.68)) translate(0, 0); }
+        20% { transform: scale(var(--btn-scale, 0.68)) translate(-2.5px, 1.5px) rotate(-2deg); }
+        40% { transform: scale(var(--btn-scale, 0.68)) translate(2.5px, -1.5px) rotate(2deg); }
+        60% { transform: scale(var(--btn-scale, 0.68)) translate(-2px, -1px) rotate(-1.5deg); }
+        80% { transform: scale(var(--btn-scale, 0.68)) translate(2px, 1px) rotate(1.5deg); }
+      }
+
+      .btn-ne.panic-shiver-1 {
+        animation: jitterLight 0.12s infinite linear !important;
+      }
+
+      .btn-ne.panic-shiver-2 {
+        animation: jitterHeavy 0.08s infinite linear !important;
+      }
+
+      /* Sweat droplet particle */
+      .sweat-drop {
+        position: fixed;
+        pointer-events: none;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+        animation: sweatDropFly 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      }
+
+      @keyframes sweatDropFly {
+        0% {
+          opacity: 1;
+          transform: translate(0, 0) scale(0.5);
+        }
+        35% {
+          opacity: 1;
+          transform: translate(var(--fly-x, 15px), var(--fly-y, -25px)) scale(1.15);
+        }
+        100% {
+          opacity: 0;
+          transform: translate(calc(var(--fly-x, 15px) * 1.5), calc(var(--fly-y, -25px) + 38px)) scale(0.3);
+        }
+      }
+
+      /* Breathing relief animation when returning home */
+      @keyframes landingRelief {
+        0% {
+          transform: scale(0.85);
+        }
+        40% {
+          transform: scale(1.14);
+        }
+        70% {
+          transform: scale(0.97);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .btn-ne.landing-relief {
+        animation: landingRelief 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
       }
 
       /* Morphed state: when NE turns into Yessir */
@@ -288,7 +355,29 @@
         box-shadow: 
           0 6px 20px rgba(17, 22, 19, 0.35),
           0 0 16px rgba(108, 191, 143, 0.45) !important;
-        animation: morphPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        animation: morphPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+      }
+
+      /* Blinking state: rapid alternate between Yessir and NE */
+      .btn-ne.is-blinking {
+        transition: none !important;
+        cursor: pointer;
+      }
+
+      .btn-ne.is-blinking.blink-yessir {
+        background-color: var(--cf-ink) !important;
+        color: var(--cf-cream) !important;
+        border-color: transparent !important;
+        box-shadow: 
+          0 6px 20px rgba(17, 22, 19, 0.35),
+          0 0 16px rgba(108, 191, 143, 0.45) !important;
+      }
+
+      .btn-ne.is-blinking.blink-ne {
+        background: #f3f2eb !important;
+        color: var(--cf-ink) !important;
+        border: 1.5px solid rgba(17, 22, 19, 0.22) !important;
+        box-shadow: 0 4px 12px rgba(17, 22, 19, 0.08) !important;
       }
 
       @keyframes morphPop {
@@ -495,6 +584,9 @@
         let isTransformed = false;
         let placeholder = null;
         let soundEnabled = true;
+        let blinkInterval = null;
+        let isBlinking = false;
+        let blinkState = 0;
 
         // Sound generator via Web Audio API
         let audioCtx = null;
@@ -511,7 +603,7 @@
           return audioCtx;
         }
 
-        function playSound(type) {
+        function playSound(type, intensity) {
           if (!soundEnabled) return;
           try {
             const ctx = getAudioContext();
@@ -520,34 +612,62 @@
             const now = ctx.currentTime;
 
             if (type === 'escape') {
+              if (intensity === 1) {
+                // Swift nimble boop
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(380, now);
+                osc.frequency.exponentialRampToValueAtTime(740, now + 0.13);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.15);
+              } else if (intensity === 2) {
+                // Nervous double-chirp
+                [0, 0.06].forEach((delay, idx) => {
+                  const osc = ctx.createOscillator();
+                  const gain = ctx.createGain();
+                  osc.type = 'triangle';
+                  osc.frequency.setValueAtTime(520 + idx * 80, now + delay);
+                  osc.frequency.exponentialRampToValueAtTime(840 + idx * 90, now + delay + 0.08);
+                  gain.gain.setValueAtTime(0.18, now + delay);
+                  gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.09);
+                  osc.connect(gain);
+                  gain.connect(ctx.destination);
+                  osc.start(now + delay);
+                  osc.stop(now + delay + 0.1);
+                });
+              } else {
+                // Comic exhausted sigh / whistle down
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(780, now);
+                osc.frequency.exponentialRampToValueAtTime(240, now + 0.32);
+                gain.gain.setValueAtTime(0.22, now);
+                gain.gain.linearRampToValueAtTime(0.18, now + 0.18);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.34);
+              }
+            } else if (type === 'relief') {
+              // Deep breath of relief when resting back in card
               const osc = ctx.createOscillator();
               const gain = ctx.createGain();
               osc.type = 'sine';
-              osc.frequency.setValueAtTime(340 + jumpCount * 90, now);
-              osc.frequency.exponentialRampToValueAtTime(780 + jumpCount * 120, now + 0.15);
-
-              gain.gain.setValueAtTime(0.2, now);
-              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
-
+              osc.frequency.setValueAtTime(320, now);
+              osc.frequency.exponentialRampToValueAtTime(480, now + 0.22);
+              gain.gain.setValueAtTime(0.15, now);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
               osc.connect(gain);
               gain.connect(ctx.destination);
               osc.start(now);
-              osc.stop(now + 0.17);
-            } else if (type === 'fall') {
-              const osc = ctx.createOscillator();
-              const gain = ctx.createGain();
-              osc.type = 'triangle';
-              osc.frequency.setValueAtTime(620, now);
-              osc.frequency.exponentialRampToValueAtTime(100, now + 0.6);
-
-              gain.gain.setValueAtTime(0.25, now);
-              gain.gain.linearRampToValueAtTime(0.2, now + 0.35);
-              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-
-              osc.connect(gain);
-              gain.connect(ctx.destination);
-              osc.start(now);
-              osc.stop(now + 0.62);
+              osc.stop(now + 0.32);
             } else if (type === 'victory') {
               const notes = [440, 554.37, 659.25, 880, 1108.73];
               notes.forEach((freq, i) => {
@@ -680,12 +800,50 @@
           }
         }
 
-        // Morph NE into Yessir!
+        // Blinking roulette between "Yessir" and "NE"
+        function startBlinking() {
+          if (blinkInterval) clearInterval(blinkInterval);
+          isBlinking = true;
+          blinkState = 0;
+          btnNe.classList.add('is-blinking', 'blink-ne');
+          btnNe.classList.remove('blink-yessir');
+          btnNe.textContent = 'NE';
+          btnNe.setAttribute('aria-label', 'NE');
+
+          blinkInterval = setInterval(() => {
+            if (!isBlinking) return;
+            blinkState = 1 - blinkState;
+            if (blinkState === 1) {
+              btnNe.textContent = 'Yessir';
+              btnNe.setAttribute('aria-label', 'Yessir');
+              btnNe.classList.add('blink-yessir');
+              btnNe.classList.remove('blink-ne');
+            } else {
+              btnNe.textContent = 'NE';
+              btnNe.setAttribute('aria-label', 'NE');
+              btnNe.classList.add('blink-ne');
+              btnNe.classList.remove('blink-yessir');
+            }
+          }, 110);
+        }
+
+        function stopBlinking() {
+          if (blinkInterval) {
+            clearInterval(blinkInterval);
+            blinkInterval = null;
+          }
+          isBlinking = false;
+          btnNe.classList.remove('is-blinking', 'blink-yessir', 'blink-ne');
+        }
+
+        // Morph NE permanently into Yessir!
         function morphToYessir() {
+          stopBlinking();
           if (isTransformed) return;
           isTransformed = true;
           btnNe.textContent = 'Yessir';
           btnNe.setAttribute('aria-label', 'Yessir');
+          btnNe.classList.remove('blink-yessir', 'blink-ne', 'is-blinking');
           btnNe.classList.add('morphed-yessir');
           playSound('morph');
         }
@@ -716,6 +874,38 @@
           }, 200);
         }
 
+        // Sweat droplets generator
+        function spawnSweatDrops(centerX, topY, count) {
+          for (let i = 0; i < count; i++) {
+            const drop = document.createElement('div');
+            drop.className = 'sweat-drop';
+
+            const dir = i % 2 === 0 ? 1 : -1;
+            const flyX = dir * (12 + Math.random() * 22);
+            const flyY = -(18 + Math.random() * 20);
+
+            drop.style.setProperty('--fly-x', `${flyX}px`);
+            drop.style.setProperty('--fly-y', `${flyY}px`);
+
+            const offsetX = (Math.random() - 0.5) * 36;
+            const offsetY = (Math.random() - 0.5) * 8;
+            drop.style.left = `${centerX + offsetX}px`;
+            drop.style.top = `${topY + offsetY}px`;
+
+            drop.innerHTML = `
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" fill="#38bdf8" stroke="#0284c7" stroke-width="1.2"/>
+                <path d="M9 11a3 3 0 0 0 3 3" stroke="#bae6fd" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            `;
+
+            document.body.appendChild(drop);
+            setTimeout(() => {
+              if (drop.parentNode) drop.parentNode.removeChild(drop);
+            }, 700);
+          }
+        }
+
         // NE Button Escape Logic
         function escapeNeButton(e) {
           // If already returned or morphed, do not escape - morph to Yessir!
@@ -739,15 +929,44 @@
           const btnWidth = rect.width;
           const btnHeight = rect.height;
 
-          // Compute safe viewport bounds
-          const padding = 20;
+          // Compute bounds near center / inside central card
+          const card = document.getElementById('app-card');
+          const cardRect = card ? card.getBoundingClientRect() : null;
+
           const screenW = window.innerWidth;
           const screenH = window.innerHeight;
+          const pad = 16;
 
-          const minX = padding;
-          const maxX = Math.max(padding, screenW - btnWidth - padding);
-          const minY = padding;
-          const maxY = Math.max(padding, screenH - btnHeight - padding);
+          let minX, maxX, minY, maxY;
+
+          if (cardRect && cardRect.width > btnWidth + 40 && cardRect.height > btnHeight + 40) {
+            // Confine inside the visible card in the center
+            minX = Math.max(pad, Math.floor(cardRect.left + 20));
+            maxX = Math.min(screenW - btnWidth - pad, Math.floor(cardRect.right - btnWidth - 20));
+            minY = Math.max(pad, Math.floor(cardRect.top + 20));
+            maxY = Math.min(screenH - btnHeight - pad, Math.floor(cardRect.bottom - btnHeight - 20));
+          } else {
+            // Fallback: stay within tight radius around center
+            const centerX = screenW / 2;
+            const centerY = screenH / 2;
+            const spanX = Math.min(160, Math.max(40, (screenW - btnWidth) / 2 - pad));
+            const spanY = Math.min(130, Math.max(30, (screenH - btnHeight) / 2 - pad));
+            minX = Math.max(pad, Math.floor(centerX - spanX - btnWidth / 2));
+            maxX = Math.min(screenW - btnWidth - pad, Math.floor(centerX + spanX - btnWidth / 2));
+            minY = Math.max(pad, Math.floor(centerY - spanY - btnHeight / 2));
+            maxY = Math.min(screenH - btnHeight - pad, Math.floor(centerY + spanY - btnHeight / 2));
+          }
+
+          if (maxX < minX) {
+            const mid = (minX + maxX) / 2;
+            minX = Math.max(pad, mid - 20);
+            maxX = Math.min(screenW - btnWidth - pad, mid + 20);
+          }
+          if (maxY < minY) {
+            const mid = (minY + maxY) / 2;
+            minY = Math.max(pad, mid - 20);
+            maxY = Math.min(screenH - btnHeight - pad, mid + 20);
+          }
 
           const currentCenterX = rect.left + btnWidth / 2;
           const currentCenterY = rect.top + btnHeight / 2;
@@ -761,8 +980,8 @@
             targetY = Math.floor(minY + Math.random() * (maxY - minY));
             attempts++;
             const dist = Math.hypot(targetX + btnWidth / 2 - currentCenterX, targetY + btnHeight / 2 - currentCenterY);
-            if (dist > 160 || attempts > 20) break;
-          } while (attempts < 20);
+            if (dist > 80 || attempts > 15) break;
+          } while (attempts < 15);
 
           if (!isEscaped) {
             isEscaped = true;
@@ -785,48 +1004,87 @@
             void btnNe.offsetWidth;
           }
 
+          // Progressive Shrink & Panic Jitter
+          let scale = 1;
+          let dropsCount = 2;
+
+          btnNe.classList.remove('panic-shiver-1', 'panic-shiver-2');
+
+          if (jumpCount === 1) {
+            scale = 0.92;
+            dropsCount = 2;
+            btnNe.style.transform = `scale(${scale})`;
+          } else if (jumpCount === 2) {
+            scale = 0.8;
+            dropsCount = 3;
+            btnNe.classList.add('panic-shiver-1');
+          } else if (jumpCount >= 3) {
+            scale = 0.68;
+            dropsCount = 5;
+            btnNe.classList.add('panic-shiver-2');
+          }
+
+          btnNe.style.setProperty('--btn-scale', scale);
           btnNe.style.left = `${targetX}px`;
           btnNe.style.top = `${targetY}px`;
 
-          playSound('escape');
+          // Spawn sweat droplets popping out
+          spawnSweatDrops(targetX + (btnWidth * scale) / 2, targetY, dropsCount);
+
+          playSound('escape', jumpCount);
 
           // The Twist: After 3 jumps, wait a moment and smoothly return home!
           if (jumpCount === 3) {
             setTimeout(() => {
               if (placeholder) {
+                // Stop frantic shaking right before the glide home
+                btnNe.classList.remove('panic-shiver-1', 'panic-shiver-2');
+
                 const homeRect = placeholder.getBoundingClientRect();
-                btnNe.style.transition = 'left 0.6s cubic-bezier(0.34, 1.25, 0.64, 1), top 0.6s cubic-bezier(0.34, 1.25, 0.64, 1), transform 0.3s ease';
+                btnNe.style.transition = 'left 0.7s cubic-bezier(0.34, 1.25, 0.64, 1), top 0.7s cubic-bezier(0.34, 1.25, 0.64, 1), transform 0.7s cubic-bezier(0.34, 1.25, 0.64, 1)';
+                btnNe.style.setProperty('--btn-scale', '1');
+                btnNe.style.transform = 'scale(1)';
                 btnNe.style.left = `${homeRect.left}px`;
                 btnNe.style.top = `${homeRect.top}px`;
 
                 setTimeout(() => {
                   isReturned = true;
                   btnNe.classList.remove('is-escaping');
+                  btnNe.classList.add('landing-relief');
                   btnNe.style.position = '';
                   btnNe.style.left = '';
                   btnNe.style.top = '';
                   btnNe.style.width = '';
                   btnNe.style.height = '';
                   btnNe.style.transition = '';
+                  btnNe.style.transform = '';
+                  btnNe.style.setProperty('--btn-scale', '1');
+
+                  playSound('relief');
+
                   if (placeholder && placeholder.parentNode) {
                     placeholder.parentNode.removeChild(placeholder);
                     placeholder = null;
                   }
-                }, 620);
+
+                  setTimeout(() => {
+                    btnNe.classList.remove('landing-relief');
+                    // Start rapid flickering between Yessir and NE
+                    startBlinking();
+                  }, 450);
+                }, 720);
               }
-            }, 500);
+            }, 550);
           }
         }
 
-        // Multi-event binding for escape / morph on mobile & desktop
+        // Multi-event binding for escape
         const trapEvents = ['mouseenter', 'touchstart', 'pointerdown'];
         trapEvents.forEach((evtName) => {
           btnNe.addEventListener(
             evtName,
             function (e) {
-              if (isReturned || isTransformed) {
-                morphToYessir();
-              } else {
+              if (!isReturned && !isTransformed) {
                 escapeNeButton(e);
               }
             },
@@ -834,16 +1092,11 @@
           );
         });
 
-        btnNe.addEventListener('focus', function () {
-          if (isReturned || isTransformed) {
-            morphToYessir();
-          }
-        });
-
-        // When clicked, NE is always intercepted
+        // When clicked, whether it was flashing NE or Yessir, it ALWAYS triggers Yessir!
         btnNe.addEventListener('click', function (e) {
           e.preventDefault();
           e.stopPropagation();
+          stopBlinking();
           morphToYessir();
           triggerVictory('morphed');
         });
@@ -855,10 +1108,13 @@
 
         // Reset / Replay Logic
         btnReset.addEventListener('click', function () {
+          stopBlinking();
           jumpCount = 0;
           isEscaped = false;
           isReturned = false;
           isTransformed = false;
+
+          document.querySelectorAll('.sweat-drop').forEach((el) => el.remove());
 
           if (placeholder && placeholder.parentNode) {
             placeholder.parentNode.removeChild(placeholder);
@@ -877,7 +1133,17 @@
           btnAno.style.display = 'inline-flex';
           btnAno.style.pointerEvents = 'auto';
 
-          btnNe.classList.remove('is-escaping', 'falling', 'morphed-yessir');
+          btnNe.classList.remove(
+            'is-escaping',
+            'falling',
+            'morphed-yessir',
+            'panic-shiver-1',
+            'panic-shiver-2',
+            'landing-relief',
+            'is-blinking',
+            'blink-yessir',
+            'blink-ne'
+          );
           btnNe.textContent = 'NE';
           btnNe.setAttribute('aria-label', 'NE');
           btnNe.style.display = 'inline-flex';
@@ -887,6 +1153,7 @@
           btnNe.style.width = '';
           btnNe.style.height = '';
           btnNe.style.transform = '';
+          btnNe.style.setProperty('--btn-scale', '1');
           btnNe.style.opacity = '';
           btnNe.style.pointerEvents = 'auto';
         });
