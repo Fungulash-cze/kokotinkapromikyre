@@ -159,15 +159,66 @@
         font-weight: 500;
         color: var(--cf-text-muted);
         line-height: 1.5;
-        max-width: 500px;
+        max-width: 520px;
         margin: 0 auto 2rem;
         text-wrap: balance;
         transition: opacity 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
       }
 
       #sub-heading:empty {
         display: none;
         margin: 0;
+      }
+
+      .wire-status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.55rem;
+        padding: 0.5rem 1.25rem;
+        background: rgba(108, 191, 143, 0.16);
+        border: 1px solid rgba(108, 191, 143, 0.45);
+        border-radius: 9999px;
+        color: var(--cf-ink);
+        font-size: clamp(0.875rem, 2.5vw, 1rem);
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        box-shadow: 0 2px 14px rgba(108, 191, 143, 0.2);
+        text-align: center;
+      }
+
+      .wire-pulse-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background-color: var(--cf-mint);
+        box-shadow: 0 0 8px var(--cf-mint);
+        display: inline-block;
+        flex-shrink: 0;
+        animation: pulseDot 2s ease-in-out infinite;
+      }
+
+      @keyframes pulseDot {
+        0%, 100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.4);
+          opacity: 0.55;
+        }
+      }
+
+      .hint-play-ne {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--cf-text-muted);
+        margin-top: 0.25rem;
       }
 
       /* Action controls zone */
@@ -861,13 +912,14 @@
             heading.style.opacity = '1';
             heading.style.transform = 'scale(1)';
 
+            const wireHtml = '<span class="wire-status-badge"><span class="wire-pulse-dot"></span>Kdykoli volej nebo piš, jsem tzv. na drátě.</span>';
+
             if (source === 'yesssir') {
-              subHeading.textContent = 'ale pls zkus ještě kliknout na "ne", sral jsem se s tim designem;)))';
-              subHeading.style.opacity = '1';
+              subHeading.innerHTML = wireHtml + '<span class="hint-play-ne">ale pls zkus ještě kliknout na "ne", sral jsem se s tim designem;)))</span>';
             } else {
-              subHeading.textContent = '';
-              subHeading.style.opacity = '0';
+              subHeading.innerHTML = wireHtml;
             }
+            subHeading.style.opacity = '1';
 
             createConfettiBurst();
             playSound('victory');
@@ -1154,7 +1206,8 @@
           setTimeout(() => {
             heading.textContent = 'Čus, uděláme to video o AI Gigafactories?';
             heading.style.opacity = '1';
-            subHeading.textContent = '';
+            subHeading.innerHTML = '';
+            subHeading.style.opacity = '0';
           }, 150);
 
           resetControl.classList.remove('visible');
