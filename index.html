@@ -581,12 +581,14 @@
         let jumpCount = 0;
         let isEscaped = false;
         let isReturned = false;
+        let isReturning = false;
         let isTransformed = false;
         let placeholder = null;
         let soundEnabled = true;
         let blinkInterval = null;
         let isBlinking = false;
         let blinkState = 0;
+        let victoryTriggered = false;
 
         // Sound generator via Web Audio API
         let audioCtx = null;
@@ -908,13 +910,10 @@
 
         // NE Button Escape Logic
         function escapeNeButton(e) {
-          // If already returned or morphed, do not escape - morph to Yessir!
-          if (isReturned || isTransformed) {
-            morphToYessir();
+          // If blinking, returning home, morphed, or already completed 3 jumps, do not escape
+          if (isBlinking || isReturning || isReturned || isTransformed || jumpCount >= 3) {
             return;
           }
-
-          if (jumpCount >= 3) return;
 
           if (e && e.cancelable) {
             e.preventDefault();
@@ -1035,6 +1034,9 @@
 
           // The Twist: After 3 jumps, wait a moment and smoothly return home!
           if (jumpCount === 3) {
+            isReturning = true;
+            btnNe.style.pointerEvents = 'none';
+
             setTimeout(() => {
               if (placeholder) {
                 // Stop frantic shaking right before the glide home
@@ -1069,6 +1071,8 @@
 
                   setTimeout(() => {
                     btnNe.classList.remove('landing-relief');
+                    isReturning = false;
+                    btnNe.style.pointerEvents = 'auto';
                     // Start rapid flickering between Yessir and NE
                     startBlinking();
                   }, 450);
@@ -1078,13 +1082,13 @@
           }
         }
 
-        // Multi-event binding for escape
+        // Multi-event binding for escape: ONLY triggers escape during the 3 jumps before returning
         const trapEvents = ['mouseenter', 'touchstart', 'pointerdown'];
         trapEvents.forEach((evtName) => {
           btnNe.addEventListener(
             evtName,
             function (e) {
-              if (!isReturned && !isTransformed) {
+              if (!isBlinking && !isReturning && !isReturned && !isTransformed && jumpCount < 3) {
                 escapeNeButton(e);
               }
             },
@@ -1092,14 +1096,37 @@
           );
         });
 
-        // When clicked, whether it was flashing NE or Yessir, it ALWAYS triggers Yessir!
-        btnNe.addEventListener('click', function (e) {
-          e.preventDefault();
-          e.stopPropagation();
+        // The user MUST click/tap the blinking button to stop on Yessir and reach the victory screen!
+        function handleBlinkClick(e) {
+          // If NOT currently blinking, never trigger victory
+          if (!isBlinking) {
+            if (e && e.cancelable) e.preventDefault();
+            if (e && e.stopPropagation) e.stopPropagation();
+            return;
+          }
+
+          if (victoryTriggered) return;
+          victoryTriggered = true;
+
+          if (e && e.cancelable) e.preventDefault();
+          if (e && e.stopPropagation) e.stopPropagation();
+
+          // 1. Immediately halt the blinking roulette
           stopBlinking();
+
+          // 2. Freeze the button permanently on "Yessir"
           morphToYessir();
+
+          // 3. Trigger final victory celebration
           triggerVictory('morphed');
-        });
+        }
+
+        btnNe.addEventListener('click', handleBlinkClick);
+        btnNe.addEventListener('touchend', function (e) {
+          if (isBlinking) {
+            handleBlinkClick(e);
+          }
+        }, { passive: false });
 
         // "Yesssir" Button Click Interaction
         btnAno.addEventListener('click', function () {
@@ -1112,7 +1139,9 @@
           jumpCount = 0;
           isEscaped = false;
           isReturned = false;
+          isReturning = false;
           isTransformed = false;
+          victoryTriggered = false;
 
           document.querySelectorAll('.sweat-drop').forEach((el) => el.remove());
 
